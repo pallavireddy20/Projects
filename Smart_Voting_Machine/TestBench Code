@@ -1,0 +1,64 @@
+`timescale 1ns/1ps
+
+module smart_voting_fsm_tb;
+
+    reg clk;
+    reg rst;
+    reg vote_req;
+    reg sel_valid;
+    reg decode_done;
+    reg count_done;
+    reg next_vote;
+
+    wire [2:0] state;
+
+    smart_voting_fsm uut (
+        .clk(clk),
+        .rst(rst),
+        .vote_req(vote_req),
+        .sel_valid(sel_valid),
+        .decode_done(decode_done),
+        .count_done(count_done),
+        .next_vote(next_vote),
+        .state(state)
+    );
+
+    // Fast Clock (1ns period)
+    initial begin
+        clk = 0;
+        forever #0.5 clk = ~clk;
+    end
+
+    // Monitor
+    initial begin
+        $monitor("Time=%0t State=%b", $time, state);
+    end
+
+    // VCD Dump
+    initial begin
+        $dumpfile("fsm.vcd");
+        $dumpvars(0, smart_voting_fsm_tb);
+    end
+
+    // Test Sequence (within 10ns)
+    initial begin
+
+        rst = 1;
+        vote_req = 0;
+        sel_valid = 0;
+        decode_done = 0;
+        count_done = 0;
+        next_vote = 0;
+
+        #1 rst = 0;          // RESET -> IDLE
+        #1 vote_req = 1;     // IDLE -> CAND_SELECT
+        #1 sel_valid = 1;    // CAND_SELECT -> DECODE
+        #1 decode_done = 1;  // DECODE -> REGISTER
+        #1 count_done = 1;   // COUNT -> DISPLAY
+        #1 next_vote = 1;    // DISPLAY -> IDLE
+
+        #3 $finish;
+
+    end
+
+endmodule
