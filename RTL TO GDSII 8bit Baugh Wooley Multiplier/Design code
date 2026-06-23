@@ -1,0 +1,91 @@
+
+module baugh_wooley_8bit(
+    input  signed [7:0] a,
+    input  signed [7:0] b,
+    output signed [15:0] p
+);
+
+wire pp00,pp01,pp02,pp03,pp04,pp05,pp06,pp07;
+wire pp10,pp11,pp12,pp13,pp14,pp15,pp16,pp17;
+wire pp20,pp21,pp22,pp23,pp24,pp25,pp26,pp27;
+wire pp30,pp31,pp32,pp33,pp34,pp35,pp36,pp37;
+wire pp40,pp41,pp42,pp43,pp44,pp45,pp46,pp47;
+wire pp50,pp51,pp52,pp53,pp54,pp55,pp56,pp57;
+wire pp60,pp61,pp62,pp63,pp64,pp65,pp66,pp67;
+wire pp70,pp71,pp72,pp73,pp74,pp75,pp76,pp77;
+
+assign pp00=a[0]&b[0];
+assign pp01=a[0]&b[1];
+assign pp02=a[0]&b[2];
+assign pp03=a[0]&b[3];
+assign pp04=a[0]&b[4];
+assign pp05=a[0]&b[5];
+assign pp06=a[0]&b[6];
+assign pp07=~(a[0]&b[7]);
+
+assign pp10=a[1]&b[0];
+assign pp11=a[1]&b[1];
+assign pp12=a[1]&b[2];
+assign pp13=a[1]&b[3];
+assign pp14=a[1]&b[4];
+assign pp15=a[1]&b[5];
+assign pp16=a[1]&b[6];
+assign pp17=~(a[1]&b[7]);
+
+assign pp20=a[2]&b[0];
+assign pp21=a[2]&b[1];
+assign pp22=a[2]&b[2];
+assign pp23=a[2]&b[3];
+assign pp24=a[2]&b[4];
+assign pp25=a[2]&b[5];
+assign pp26=a[2]&b[6];
+assign pp27=~(a[2]&b[7]);
+
+assign pp30=a[3]&b[0];
+assign pp31=a[3]&b[1];
+assign pp32=a[3]&b[2];
+assign pp33=a[3]&b[3];
+assign pp34=a[3]&b[4];
+assign pp35=a[3]&b[5];
+assign pp36=a[3]&b[6];
+assign pp37=~(a[3]&b[7]);
+
+assign pp40=a[4]&b[0];
+assign pp41=a[4]&b[1];
+assign pp42=a[4]&b[2];
+assign pp43=a[4]&b[3];
+assign pp44=a[4]&b[4];
+assign pp45=a[4]&b[5];
+assign pp46=a[4]&b[6];
+assign pp47=~(a[4]&b[7]);
+
+assign pp50=a[5]&b[0];
+assign pp51=a[5]&b[1];
+assign pp52=a[5]&b[2];
+assign pp53=a[5]&b[3];
+assign pp54=a[5]&b[4];
+assign pp55=a[5]&b[5];
+assign pp56=a[5]&b[6];
+assign pp57=~(a[5]&b[7]);
+
+assign pp60=a[6]&b[0];
+assign pp61=a[6]&b[1];
+assign pp62=a[6]&b[2];
+assign pp63=a[6]&b[3];
+assign pp64=a[6]&b[4];
+assign pp65=a[6]&b[5];
+assign pp66=a[6]&b[6];
+assign pp67=~(a[6]&b[7]);
+
+assign pp70=~(a[7]&b[0]);
+assign pp71=~(a[7]&b[1]);
+assign pp72=~(a[7]&b[2]);
+assign pp73=~(a[7]&b[3]);
+assign pp74=~(a[7]&b[4]);
+assign pp75=~(a[7]&b[5]);
+assign pp76=~(a[7]&b[6]);
+assign pp77=(a[7]&b[7]);
+
+assign p = a*b;
+
+endmodule
