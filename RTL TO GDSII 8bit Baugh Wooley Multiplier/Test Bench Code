@@ -1,0 +1,71 @@
+`timescale 1ns/1ps
+
+module tb_baugh_wooley_8bit;
+
+reg signed [7:0] a;
+reg signed [7:0] b;
+wire signed [15:0] p;
+
+reg signed [15:0] exp;
+integer i;
+
+// DUT instantiation
+baugh_wooley_8bit uut(
+    .a(a),
+    .b(b),
+    .p(p)
+);
+
+// Task for checking
+task check;
+input signed [7:0] a1,b1;
+begin
+    a = a1;
+    b = b1;
+
+    exp = a1 * b1;
+
+    #10;   // wait for output settle
+
+    if(p === exp)
+        $display("PASS a=%0d b=%0d p=%0d",a,b,p);
+    else
+        $display("FAIL a=%0d b=%0d p=%0d exp=%0d",
+                  a,b,p,exp);
+end
+endtask
+
+
+initial begin
+
+    // Initialize signals
+    a = 0;
+    b = 0;
+    exp = 0;
+    i = 0;
+
+    $dumpfile("dump.vcd");
+    $dumpvars(0,tb_baugh_wooley_8bit);
+
+    // Test cases
+    check(0,0);
+    check(1,1);
+    check(5,3);
+    check(-5,3);
+    check(12,-4);
+    check(-10,-7);
+    check(127,127);
+    check(-128,1);
+    check(100,-25);
+    check(-50,20);
+
+    // Random tests
+    for(i=0;i<50;i=i+1)
+        check($random,$random);
+
+    #10;
+    $finish;
+
+end
+
+endmodule
