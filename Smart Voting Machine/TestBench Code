@@ -1,0 +1,132 @@
+// =====================================================================
+// Testbench : Smart Voting Machine
+// Covers Experiments 1-4 from the case study:
+//   Exp 1 : Select Candidate A, cast a vote, observe COUNT increment
+//   Exp 2 : Select Candidate C, cast another vote, observe decoder + COUNT
+//   Exp 3 : Apply reset, verify COUNT returns to zero
+//   Exp 4 : Dump waveforms for GTKWave (MUX, Decoder, Register, Counter)
+// =====================================================================
+`timescale 1ns/1ps
+
+module voting_system_tb;
+
+    reg        CLK, RST;
+    reg        D0, D1, D2, D3;
+    reg  [1:0] SEL;
+    reg        EN_GLOBAL;
+
+    wire       V0, V1, V2, V3;
+    wire [2:0] COUNT;
+    wire       MAX_VOTE;
+
+    // Candidate encodings for readability
+    localparam CAND_A = 2'b00;
+    localparam CAND_B = 2'b01;
+    localparam CAND_C = 2'b10;
+    localparam CAND_D = 2'b11;
+
+    // Instantiate DUT (top-level voting system)
+    voting_system DUT (
+        .CLK       (CLK),
+        .RST       (RST),
+        .D0        (D0),
+        .D1        (D1),
+        .D2        (D2),
+        .D3        (D3),
+        .SEL       (SEL),
+        .EN_GLOBAL (EN_GLOBAL),
+        .V0        (V0),
+        .V1        (V1),
+        .V2        (V2),
+        .V3        (V3),
+        .COUNT     (COUNT),
+        .MAX_VOTE  (MAX_VOTE)
+    );
+
+    // Clock generation : 10 ns period
+    always #5 CLK <= ~CLK;
+
+    // Task to cast a single vote for a candidate
+    task cast_vote(input [1:0] candidate);
+        begin
+            @(negedge CLK);
+            SEL       = candidate;
+            EN_GLOBAL = 1'b1;
+            @(negedge CLK);
+            EN_GLOBAL = 1'b0;
+        end
+    endtask
+
+    initial begin
+        // -------- Waveform dump for GTKWave (Experiment 4) --------
+        $dumpfile("voting_system.vcd");
+        $dumpvars(0, voting_system_tb);
+
+        // -------- Initialization --------
+        CLK       = 1'b0;
+        RST       = 1'b1;
+        SEL       = 2'b00;
+        EN_GLOBAL = 1'b0;
+        D0 = 1'b1; D1 = 1'b1; D2 = 1'b1; D3 = 1'b1; // tie votes high
+
+        $display("\n===== Smart Voting Machine Simulation =====");
+
+        // Hold reset for a couple of clocks
+        repeat (2) @(negedge CLK);
+        RST = 1'b0;
+        $display("[%0t] Reset released. COUNT=%0d V0=%b V1=%b V2=%b V3=%b",
+                   $time, COUNT, V0, V1, V2, V3);
+
+        // -------------------------------------------------------
+        // Experiment 1 : Select Candidate A and cast a vote
+        // -------------------------------------------------------
+        $display("\n-- Experiment 1: Vote for Candidate A --");
+        cast_vote(CAND_A);
+        $display("[%0t] SEL=A  V0=%b V1=%b V2=%b V3=%b COUNT=%0d MAX_VOTE=%b",
+                   $time, V0, V1, V2, V3, COUNT, MAX_VOTE);
+
+        // -------------------------------------------------------
+        // Experiment 2 : Select Candidate C and cast another vote
+        // -------------------------------------------------------
+        $display("\n-- Experiment 2: Vote for Candidate C --");
+        cast_vote(CAND_C);
+        $display("[%0t] SEL=C  V0=%b V1=%b V2=%b V3=%b COUNT=%0d MAX_VOTE=%b",
+                   $time, V0, V1, V2, V3, COUNT, MAX_VOTE);
+
+        // Cast two more votes (B and D) to reach MAX_VOTE = 4
+        $display("\n-- Casting remaining votes (B and D) --");
+        cast_vote(CAND_B);
+        $display("[%0t] SEL=B  V0=%b V1=%b V2=%b V3=%b COUNT=%0d MAX_VOTE=%b",
+                   $time, V0, V1, V2, V3, COUNT, MAX_VOTE);
+
+        cast_vote(CAND_D);
+        $display("[%0t] SEL=D  V0=%b V1=%b V2=%b V3=%b COUNT=%0d MAX_VOTE=%b",
+                   $time, V0, V1, V2, V3, COUNT, MAX_VOTE);
+
+        if (MAX_VOTE)
+            $display(">>> All 4 votes received, MAX_VOTE asserted as expected.");
+        else
+            $display(">>> ERROR: MAX_VOTE not asserted after 4 votes!");
+
+        // -------------------------------------------------------
+        // Experiment 3 : Apply reset, verify COUNT returns to zero
+        // -------------------------------------------------------
+        $display("\n-- Experiment 3: Apply reset --");
+        @(negedge CLK);
+        RST = 1'b1;
+        @(negedge CLK);
+        RST = 1'b0;
+        $display("[%0t] After reset -> COUNT=%0d V0=%b V1=%b V2=%b V3=%b MAX_VOTE=%b",
+                   $time, COUNT, V0, V1, V2, V3, MAX_VOTE);
+
+        if (COUNT == 3'd0)
+            $display(">>> PASS: COUNT correctly returned to zero after reset.");
+        else
+            $display(">>> ERROR: COUNT did not reset to zero!");
+
+        $display("\n===== Simulation Complete. Load voting_system.vcd in GTKWave =====\n");
+        #20;
+        $finish;
+    end
+
+endmodule
